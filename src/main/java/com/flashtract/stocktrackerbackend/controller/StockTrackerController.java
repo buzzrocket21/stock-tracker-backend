@@ -22,8 +22,8 @@ public class StockTrackerController {
     }
 
     @MessageMapping("/untrack")
-    public StockModel untrackStock(@Payload final String key)
+    public void untrackStock(@Payload final String key)
             throws IOException {
-        return stockService.untrack(key);
+        stockService.untrack(key);
     }
 }

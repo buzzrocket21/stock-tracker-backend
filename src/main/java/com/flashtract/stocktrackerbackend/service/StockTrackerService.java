@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.quotes.stock.StockQuote;
 
@@ -26,18 +27,28 @@ public class StockTrackerService {
         return this.getInternal(key);
     }
 
-	public StockModel untrack(String key) {
+	public void untrack(String key) {
         this.stockMap.remove(key);
-        return null;
 	}
 
     private StockModel getInternal(String key) throws IOException {
-        StockQuote quote = YahooFinance.get(key).getQuote(true);
+        Stock stock = YahooFinance.get(key);
+        if(stock == null) {
+            return null;
+        }
+        StockQuote quote = stock.getQuote(true);
         BigDecimal price = quote.getPrice();
-        StockModel stock = new StockModel(key, price, quote.getLastTradeTime());
-        this.stockMap.put(key, stock);
-        template.convertAndSend("/topic/public", stock);
-        return stock;
+        String name = stock.getName();
+        StockModel stockModel = new StockModel(
+            key,
+            name,
+            price,
+            quote.getLastTradeTime(),
+            quote.getChange()
+        );
+        this.stockMap.put(key, stockModel);
+        template.convertAndSend("/topic/public", stockModel);
+        return stockModel;
     }
 
 	public void update() throws IOException {
