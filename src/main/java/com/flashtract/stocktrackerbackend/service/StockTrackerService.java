@@ -2,10 +2,13 @@ package com.flashtract.stocktrackerbackend.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.flashtract.stocktrackerbackend.model.StockModel;
+import com.flashtract.stocktrackerbackend.model.StockHistoryModel;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -13,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
+import yahoofinance.histquotes.HistoricalQuote;
+import yahoofinance.histquotes.Interval;
 import yahoofinance.quotes.stock.StockQuote;
 
 @Service
@@ -55,5 +60,29 @@ public class StockTrackerService {
 		for (Map.Entry<String, StockModel> entry : this.stockMap.entrySet()) {
             this.getInternal(entry.getKey());
         }
+	}
+
+	public StockHistoryModel getHistory(String key) throws IOException {
+        // For now, just get the last 6 months on a daily interval
+        Calendar from = Calendar.getInstance();
+        Calendar to = Calendar.getInstance();
+        from.add(Calendar.MONTH, -6);
+        Stock stock = YahooFinance.get(key, from, to, Interval.DAILY);
+        if(stock == null) {
+            return null;
+        }
+        StockQuote quote = stock.getQuote(true);
+        BigDecimal price = quote.getPrice();
+        String name = stock.getName();
+        List<HistoricalQuote> history = stock.getHistory();
+        StockHistoryModel stockModel = new StockHistoryModel(
+            key,
+            name,
+            price,
+            quote.getLastTradeTime(),
+            quote.getChange(),
+            history
+        );
+		return stockModel;
 	}
 }

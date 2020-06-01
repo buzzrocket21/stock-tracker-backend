@@ -11,19 +11,17 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class StockTrackerController {
+public class StockTrackerWebsocketController {
     @Autowired
     StockTrackerService stockService;
 
     @MessageMapping("/track")
-    public StockModel trackStock(@Payload final String key)
-            throws IOException {
+    public StockModel trackStock(@Payload final String key) throws IOException {
         return stockService.track(key);
     }
 
     @MessageMapping("/untrack")
-    public void untrackStock(@Payload final String key)
-            throws IOException {
+    public void untrackStock(@Payload final String key) throws IOException {
         stockService.untrack(key);
     }
 }
