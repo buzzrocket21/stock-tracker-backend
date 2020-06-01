@@ -2,7 +2,7 @@
 A Spring Boot web service for serving real time stock quotes.
 
 ## Requirements
-1. Java - 1.11.x
+1. Java - 11.x
 
 2. Maven - 3.x.x
 
